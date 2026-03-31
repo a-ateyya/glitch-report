@@ -77,7 +77,7 @@ export function IncidentCard({ incident, index }: IncidentCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="font-mono font-bold text-base md:text-lg mb-2 leading-relaxed" data-testid={`text-title-${incident.id}`}>
+          <h3 className="font-arabic font-bold text-base md:text-lg mb-2 leading-relaxed" data-testid={`text-title-${incident.id}`}>
             {incident.lossAmount ? (
               <span className="text-red-500 dark:text-red-400">
                 {formatLossArabic(incident.lossAmount)}{" — "}

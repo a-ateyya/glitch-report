@@ -33,7 +33,7 @@ export function HeroSection() {
           <div className="flex items-center gap-3 mb-4">
             <GlitchLogo />
             <div>
-              <h1 className="font-mono font-bold text-xl md:text-2xl glitch-text tracking-tight">
+              <h1 className="font-arabic font-bold text-xl md:text-2xl glitch-text">
                 تقرير الخلل
               </h1>
               <p className="font-mono text-xs text-background/50 tracking-wider">
