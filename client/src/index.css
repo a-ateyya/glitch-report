@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* The Glitch Report - Dark terminal aesthetic with danger accents */
+    --background: 220 14% 96%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 10%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 220 14% 92%;
+    --accent-foreground: 220 20% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 86%;
+    --input: 220 14% 86%;
+    --ring: 0 72% 51%;
+    --radius: 0.5rem;
+
+    /* Category colors */
+    --color-ai: 262 83% 58%;
+    --color-crypto: 38 92% 50%;
+    --color-iot: 199 89% 48%;
+  }
+
+  .dark {
+    --background: 220 16% 7%;
+    --foreground: 220 10% 85%;
+    --card: 220 16% 10%;
+    --card-foreground: 220 10% 85%;
+    --popover: 220 16% 10%;
+    --popover-foreground: 220 10% 85%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 16%;
+    --secondary-foreground: 220 10% 85%;
+    --muted: 220 14% 16%;
+    --muted-foreground: 220 10% 52%;
+    --accent: 220 14% 16%;
+    --accent-foreground: 220 10% 85%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
+    --ring: 0 72% 51%;
+
+    --color-ai: 262 83% 65%;
+    --color-crypto: 38 92% 55%;
+    --color-iot: 199 89% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'IBM Plex Sans Arabic', 'IBM Plex Mono', system-ui, sans-serif;
+  }
+
+  /* RTL support */
+  [dir="rtl"] {
+    text-align: right;
+  }
+}
+
+/* Monospace for specific elements - terminal feel */
+.font-mono {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+}
+
+/* Category badge colors */
+.badge-ai {
+  background-color: hsl(var(--color-ai) / 0.15);
+  color: hsl(var(--color-ai));
+  border: 1px solid hsl(var(--color-ai) / 0.3);
+}
+
+.badge-crypto {
+  background-color: hsl(var(--color-crypto) / 0.15);
+  color: hsl(var(--color-crypto));
+  border: 1px solid hsl(var(--color-crypto) / 0.3);
+}
+
+.badge-iot {
+  background-color: hsl(var(--color-iot) / 0.15);
+  color: hsl(var(--color-iot));
+  border: 1px solid hsl(var(--color-iot) / 0.3);
+}
+
+/* Severity indicator */
+.severity-low { color: hsl(120, 40%, 50%); }
+.severity-medium { color: hsl(38, 92%, 50%); }
+.severity-high { color: hsl(0, 72%, 51%); }
+.severity-critical { 
+  color: hsl(0, 84%, 60%); 
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Timeline connector */
+.timeline-line {
+  position: absolute;
+  right: 50%;
+  transform: translateX(50%);
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    hsl(0 72% 51% / 0.3),
+    hsl(var(--border)),
+    hsl(0 72% 51% / 0.3)
+  );
+}
+
+/* Glitch text effect for logo */
+@keyframes glitch-shift {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(1px, -1px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+}
+
+.glitch-text:hover {
+  animation: glitch-shift 0.3s ease-in-out;
+}
+
+/* Counter animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.counter-animate {
+  animation: count-up 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Shimmer for loading states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Fire icon animation for loss counter */
+@keyframes fire-flicker {
+  0%, 100% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(1.1); opacity: 0.85; }
+}
+.fire-icon {
+  animation: fire-flicker 0.5s ease-in-out infinite;
+}
