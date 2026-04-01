@@ -12,23 +12,33 @@ import crypto from "crypto";
 // ========== GEMINI LLM CLIENT ==========
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_FLASH = "gemini-2.5-flash";
+const GEMINI_PRO = "gemini-2.5-pro";
 
-async function callGemini(prompt: string, maxTokens: number = 1000): Promise<string | null> {
+function geminiUrl(model: string) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+}
+
+async function callGemini(prompt: string, maxTokens: number = 1000, usePro: boolean = false): Promise<string | null> {
   if (!GEMINI_API_KEY) {
     console.log("  [SKIP] GEMINI_API_KEY not set");
     return null;
   }
-  const resp = await fetch(GEMINI_URL, {
+  const model = usePro ? GEMINI_PRO : GEMINI_FLASH;
+  const config: any = {
+    maxOutputTokens: maxTokens,
+    temperature: 0.3,
+  };
+  // Disable thinking for Flash to save tokens
+  if (!usePro) {
+    config.thinkingConfig = { thinkingBudget: 0 };
+  }
+  const resp = await fetch(geminiUrl(model), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: maxTokens,
-        temperature: 0.3,
-      },
+      generationConfig: config,
     }),
   });
   if (!resp.ok) {
@@ -36,7 +46,12 @@ async function callGemini(prompt: string, maxTokens: number = 1000): Promise<str
     throw new Error(`Gemini API error ${resp.status}: ${err.slice(0, 200)}`);
   }
   const data = await resp.json() as any;
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  // Extract text from parts (Pro may have thinking parts)
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  for (const part of parts) {
+    if (part.text) return part.text;
+  }
+  return null;
 }
 
 // ========== SEEN ARTICLES TRACKING ==========
@@ -355,7 +370,7 @@ async function reviewHeadline(incident: ClassifiedIncident): Promise<ClassifiedI
 أجب بالعنوان الجديد فقط، بدون أي شرح أو علامات ترقيم إضافية.`;
 
   try {
-    const newTitle = await callGemini(prompt, 100);
+    const newTitle = await callGemini(prompt, 2000, true); // Use Pro for headline review
     if (newTitle && newTitle.trim().length > 5 && newTitle.trim().length < 100) {
       const cleaned = newTitle.trim().replace(/^["'`]|["'`]$/g, '');
       console.log(`    ✎ Headline rewritten: "${incident.title_ar}" → "${cleaned}"`);
