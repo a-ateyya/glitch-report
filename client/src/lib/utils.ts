@@ -56,7 +56,7 @@ export function formatDateRelative(dateStr: string): string {
 
 export const categoryInfo: Record<string, { labelAr: string; labelEn: string; emoji: string; colorClass: string }> = {
   ai: { labelAr: "ذكاء اصطناعي", labelEn: "AI", emoji: "🤖", colorClass: "badge-ai" },
-  crypto: { labelAr: "عملات مشفرة", labelEn: "Crypto", emoji: "💰", colorClass: "badge-crypto" },
+  crypto: { labelAr: "كريبتو", labelEn: "Crypto", emoji: "💰", colorClass: "badge-crypto" },
   iot: { labelAr: "إنترنت الأشياء", labelEn: "IoT", emoji: "📡", colorClass: "badge-iot" },
 };
 

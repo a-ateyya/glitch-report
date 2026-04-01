@@ -12,6 +12,8 @@ export const incidents = sqliteTable("incidents", {
   category: text("category").notNull(), // 'ai' | 'crypto' | 'iot'
   severity: text("severity").notNull().default("medium"), // 'low' | 'medium' | 'high' | 'critical'
   lossAmount: integer("loss_amount"), // in USD, null if no monetary loss
+  jobsLost: integer("jobs_lost"), // number of people who lost jobs, null if not applicable
+  company: text("company"), // company name involved (e.g. OpenAI, Tesla, Binance)
   date: text("date").notNull(), // ISO date string
   sourcesJson: text("sources_json").notNull().default("[]"), // JSON array of {title, url, archiveUrl?}
   tagsJson: text("tags_json").notNull().default("[]"), // JSON array of strings

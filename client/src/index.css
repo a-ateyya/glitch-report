@@ -6,58 +6,69 @@
 
 @layer base {
   :root {
-    /* The Glitch Report - Dark terminal aesthetic with danger accents */
-    --background: 220 14% 96%;
-    --foreground: 220 20% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
-    --primary: 0 72% 51%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 20% 10%;
-    --muted: 220 14% 92%;
-    --muted-foreground: 220 10% 46%;
-    --accent: 220 14% 92%;
-    --accent-foreground: 220 20% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 86%;
-    --input: 220 14% 86%;
-    --ring: 0 72% 51%;
-    --radius: 0.5rem;
-
-    /* Category colors */
+    --radius: 0.375rem;
+    /* Category colors (shared) */
     --color-ai: 262 83% 58%;
     --color-crypto: 38 92% 50%;
-    --color-iot: 199 89% 48%;
+    --color-iot: 187 84% 47%;
+    --color-loss: 0 84% 60%;
+    --surface-2: 230 18% 14%;
+
+    /* Light theme (non-dark) */
+    --background: 240 5% 96%;
+    --foreground: 230 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 20% 12%;
+    --primary: 262 83% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 92%;
+    --secondary-foreground: 230 20% 12%;
+    --muted: 240 5% 92%;
+    --muted-foreground: 230 10% 42%;
+    --accent: 240 5% 92%;
+    --accent-foreground: 230 20% 12%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 10% 86%;
+    --input: 230 10% 86%;
+    --ring: 262 83% 48%;
+
+    --color-ai: 262 83% 48%;
+    --color-crypto: 38 92% 42%;
+    --color-iot: 187 84% 39%;
+    --color-loss: 0 72% 51%;
+    --surface-2: 240 5% 94%;
   }
 
   .dark {
-    --background: 220 16% 7%;
-    --foreground: 220 10% 85%;
-    --card: 220 16% 10%;
-    --card-foreground: 220 10% 85%;
-    --popover: 220 16% 10%;
-    --popover-foreground: 220 10% 85%;
-    --primary: 0 72% 51%;
+    /* Glitch Report — Dark Dashboard (default) */
+    --background: 230 25% 5%;
+    --foreground: 240 6% 90%;
+    --card: 230 22% 9%;
+    --card-foreground: 240 6% 90%;
+    --popover: 230 22% 9%;
+    --popover-foreground: 240 6% 90%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 16%;
-    --secondary-foreground: 220 10% 85%;
-    --muted: 220 14% 16%;
-    --muted-foreground: 220 10% 52%;
-    --accent: 220 14% 16%;
-    --accent-foreground: 220 10% 85%;
-    --destructive: 0 62% 30%;
+    --secondary: 230 18% 13%;
+    --secondary-foreground: 240 6% 90%;
+    --muted: 230 18% 13%;
+    --muted-foreground: 230 10% 55%;
+    --accent: 230 18% 13%;
+    --accent-foreground: 240 6% 90%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 0 72% 51%;
+    --border: 230 15% 13%;
+    --input: 230 15% 13%;
+    --ring: 262 83% 58%;
 
     --color-ai: 262 83% 65%;
     --color-crypto: 38 92% 55%;
-    --color-iot: 199 89% 55%;
+    --color-iot: 187 84% 55%;
+    --color-loss: 0 84% 60%;
+    --surface-2: 230 18% 14%;
   }
 }
 
@@ -66,109 +77,205 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'IBM Plex Sans Arabic', 'IBM Plex Mono', system-ui, sans-serif;
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
   }
 
-  /* RTL support */
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    line-height: 1.6;
+  }
+
   [dir="rtl"] {
     text-align: right;
   }
 }
 
-/* Monospace for specific elements - terminal feel */
+/* Monospace utility */
 .font-mono {
   font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
-/* Category badge colors */
+/* ======================================== 
+   CATEGORY BADGE COLORS
+   ======================================== */
 .badge-ai {
-  background-color: hsl(var(--color-ai) / 0.15);
+  background-color: hsl(var(--color-ai) / 0.12);
   color: hsl(var(--color-ai));
-  border: 1px solid hsl(var(--color-ai) / 0.3);
+  border: 1px solid hsl(var(--color-ai) / 0.25);
 }
-
 .badge-crypto {
-  background-color: hsl(var(--color-crypto) / 0.15);
+  background-color: hsl(var(--color-crypto) / 0.12);
   color: hsl(var(--color-crypto));
-  border: 1px solid hsl(var(--color-crypto) / 0.3);
+  border: 1px solid hsl(var(--color-crypto) / 0.25);
 }
-
 .badge-iot {
-  background-color: hsl(var(--color-iot) / 0.15);
+  background-color: hsl(var(--color-iot) / 0.12);
   color: hsl(var(--color-iot));
-  border: 1px solid hsl(var(--color-iot) / 0.3);
+  border: 1px solid hsl(var(--color-iot) / 0.25);
 }
 
-/* Severity indicator */
-.severity-low { color: hsl(120, 40%, 50%); }
-.severity-medium { color: hsl(38, 92%, 50%); }
-.severity-high { color: hsl(0, 72%, 51%); }
-.severity-critical { 
-  color: hsl(0, 84%, 60%); 
-  animation: pulse-glow 2s ease-in-out infinite;
+/* ======================================== 
+   CARD CATEGORY TINTING
+   ======================================== */
+.card-ai {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+.dark .card-ai {
+  background: hsl(var(--color-ai) / 0.05);
+}
+.card-ai:hover {
+  border-color: hsl(var(--color-ai) / 0.25);
+}
+.card-crypto {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+.dark .card-crypto {
+  background: hsl(var(--color-crypto) / 0.05);
+}
+.card-crypto:hover {
+  border-color: hsl(var(--color-crypto) / 0.25);
+}
+.card-iot {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+.dark .card-iot {
+  background: hsl(var(--color-iot) / 0.05);
+}
+.card-iot:hover {
+  border-color: hsl(var(--color-iot) / 0.25);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+/* Category strip (top 3px bar) */
+.strip-ai { background: hsl(var(--color-ai)); }
+.strip-crypto { background: hsl(var(--color-crypto)); }
+.strip-iot { background: hsl(var(--color-iot)); }
+
+/* ======================================== 
+   STAT BOX TOP STRIPS
+   ======================================== */
+.stat-strip-ai { background: hsl(var(--color-ai)); }
+.stat-strip-crypto { background: hsl(var(--color-crypto)); }
+.stat-strip-iot { background: hsl(var(--color-iot)); }
+.stat-strip-total { 
+  background: linear-gradient(to left, hsl(var(--color-ai)), hsl(var(--color-crypto)), hsl(var(--color-iot))); 
 }
 
-/* Timeline connector */
-.timeline-line {
+/* ======================================== 
+   GLITCH LOGO EFFECT
+   ======================================== */
+.logo-glitch {
+  position: relative;
+  display: inline-block;
+}
+.logo-glitch::after {
+  content: attr(data-text);
   position: absolute;
-  right: 50%;
-  transform: translateX(50%);
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    hsl(0 72% 51% / 0.3),
-    hsl(var(--border)),
-    hsl(0 72% 51% / 0.3)
+  inset: 0;
+  color: hsl(var(--color-ai));
+  clip-path: inset(40% 0 0 0);
+  transform: translateX(-3px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.logo-glitch::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: hsl(var(--color-iot));
+  clip-path: inset(0 0 60% 0);
+  transform: translateX(2px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ======================================== 
+   AMBIENT GLOW (subtle top gradient)
+   ======================================== */
+.ambient-glow {
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(ellipse, hsl(var(--color-ai) / 0.04) 0%, hsl(var(--color-iot) / 0.02) 40%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+.dark .ambient-glow { display: block; }
+:root:not(.dark) .ambient-glow { display: none; }
+
+/* Subtle CRT scanlines */
+.dark body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.015) 2px,
+    rgba(0, 0, 0, 0.015) 4px
   );
+  pointer-events: none;
+  z-index: 9999;
 }
 
-/* Glitch text effect for logo */
-@keyframes glitch-shift {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-1px, 1px); }
-  40% { transform: translate(1px, -1px); }
-  60% { transform: translate(-1px, -1px); }
-  80% { transform: translate(1px, 1px); }
+/* ======================================== 
+   LIVE DOT ANIMATION
+   ======================================== */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
 
-.glitch-text:hover {
-  animation: glitch-shift 0.3s ease-in-out;
+/* ======================================== 
+   PILL ACTIVE STATE
+   ======================================== */
+.pill-active {
+  background: hsl(var(--foreground) / 0.06);
+  border-color: hsl(var(--foreground) / 0.12);
+  color: hsl(var(--foreground));
 }
 
-/* Counter animation */
-@keyframes count-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ======================================== 
+   CUSTOM SCROLLBAR
+   ======================================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--background)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* ======================================== 
+   FOCUS VISIBLE
+   ======================================== */
+:focus-visible {
+  outline: 2px solid hsl(var(--color-ai));
+  outline-offset: 2px;
+  border-radius: var(--radius);
 }
 
-.counter-animate {
-  animation: count-up 0.5s ease-out;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
-}
-
-/* Shimmer for loading states */
+/* Shimmer for loading */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -177,13 +284,4 @@
   background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
-}
-
-/* Fire icon animation for loss counter */
-@keyframes fire-flicker {
-  0%, 100% { transform: scaleY(1); opacity: 1; }
-  50% { transform: scaleY(1.1); opacity: 0.85; }
-}
-.fire-icon {
-  animation: fire-flicker 0.5s ease-in-out infinite;
 }

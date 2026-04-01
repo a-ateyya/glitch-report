@@ -32,6 +32,8 @@ import {
   Eye,
   ArrowRight,
   Loader2,
+  Zap,
+  CheckCircle,
 } from "lucide-react";
 import { categoryInfo, severityInfo, formatDateArabic, formatLossArabic } from "@/lib/utils";
 import { IncidentForm } from "@/components/IncidentForm";
@@ -69,7 +71,45 @@ export default function Admin() {
     },
   });
 
+  const ingestMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/ingest?max=30");
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/incidents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      toast({
+        title: "تم الاستيراد",
+        description: `تم جلب ${data.totalFetched} مقال، إنشاء ${data.created} حادثة جديدة كمسودات`,
+      });
+    },
+    onError: () => {
+      toast({ title: "خطأ", description: "فشل في تشغيل الاستيراد التلقائي", variant: "destructive" });
+    },
+  });
+
+  const publishAllDraftsMutation = useMutation({
+    mutationFn: async () => {
+      const draftsRes = await apiRequest("GET", "/api/admin/incidents?status=draft&limit=100");
+      const draftsData = await draftsRes.json();
+      let count = 0;
+      for (const draft of draftsData.incidents) {
+        await apiRequest("PATCH", `/api/admin/incidents/${draft.id}`, { status: "published" });
+        count++;
+      }
+      return count;
+    },
+    onSuccess: (count: number) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/incidents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
+      toast({ title: "تم النشر", description: `تم نشر ${count} مسودة` });
+    },
+  });
+
   const incidents = data?.incidents || [];
+  const draftCount = incidents.filter(i => i.status === "draft").length;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -134,6 +174,40 @@ export default function Admin() {
               />
             </DialogContent>
           </Dialog>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            onClick={() => ingestMutation.mutate()}
+            disabled={ingestMutation.isPending}
+            data-testid="button-ingest-now"
+          >
+            {ingestMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4" />
+            )}
+            {ingestMutation.isPending ? "جاري الاستيراد..." : "استيراد تلقائي"}
+          </Button>
+
+          {draftCount > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 border-green-500/50 text-green-600 hover:bg-green-500/10"
+              onClick={() => publishAllDraftsMutation.mutate()}
+              disabled={publishAllDraftsMutation.isPending}
+              data-testid="button-publish-all-drafts"
+            >
+              {publishAllDraftsMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              نشر المسودات ({draftCount})
+            </Button>
+          )}
 
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger className="w-36 h-8 text-xs" data-testid="select-filter-category">

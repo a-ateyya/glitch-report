@@ -7,6 +7,8 @@ const sqlite = new Database("glitch.db");
 sqlite.pragma("journal_mode = WAL");
 const db = drizzle(sqlite);
 
+export { sqlite, db };
+
 export interface IStorage {
   // Incidents
   getIncidents(filters?: {
@@ -41,6 +43,8 @@ export class DatabaseStorage implements IStorage {
         category TEXT NOT NULL,
         severity TEXT NOT NULL DEFAULT 'medium',
         loss_amount INTEGER,
+        jobs_lost INTEGER,
+        company TEXT,
         date TEXT NOT NULL,
         sources_json TEXT NOT NULL DEFAULT '[]',
         tags_json TEXT NOT NULL DEFAULT '[]',
@@ -59,6 +63,38 @@ export class DatabaseStorage implements IStorage {
         last_updated TEXT NOT NULL
       );
     `);
+    // Add new columns if they don't exist (migration for existing DBs)
+    try { sqlite.exec(`ALTER TABLE incidents ADD COLUMN jobs_lost INTEGER`); } catch (e) { /* column exists */ }
+    try { sqlite.exec(`ALTER TABLE incidents ADD COLUMN company TEXT`); } catch (e) { /* column exists */ }
+
+    // Site settings table (editable content)
+    sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `);
+    // Seed default about page content if not exists
+    const hasAbout = sqlite.prepare("SELECT 1 FROM site_settings WHERE key = 'about_content'").get();
+    if (!hasAbout) {
+      sqlite.prepare("INSERT INTO site_settings (key, value) VALUES (?, ?)").run(
+        'about_content',
+        JSON.stringify({
+          greeting: "أهلاً بكم",
+          paragraphs: [
+            'أكره إنترنت الأشياء، ولا أؤمن بالكريبتو، وأتخوف من الذكاء الاصطناعي، فصممت \"تقرير الخلل\" لأتابع أخبار كوابيسي الثلاثة في مكان واحد. وحين أقول صممت، أعني أني طلبت من الذكاء الاصطناعي أن يصمم، ويحسن، ويجود، ويعيد حتى رضيت.',
+            'هذا التعريف أكتبه أنا محرر الموقع، وهو النص الوحيد هنا الذي كتبه صحفي بشري. باقي ما ترونه تجميعات وتلخيصات وتنبيهات مؤتمتة بالذكاء الاصطناعي.',
+            'صنعت هذا المشروع على عجالة من باب التجريب واللعب واللهو والتعرف أكثر على هذه التقنية الجديدة التي تهدد وظائفنا وتعيد تعريف أدوارنا في غرف الأخبار.'
+          ],
+          closing: "مشاهدة ممتعة.",
+          contact: {
+            x: "https://x.com/Ateyya",
+            linkedin: "https://www.linkedin.com/in/ateyya/?skipRedirect=true",
+            instagram: "https://www.instagram.com/a.ateyya/"
+          }
+        })
+      );
+    }
   }
 
   getIncidents(filters?: {

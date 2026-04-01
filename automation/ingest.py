@@ -30,11 +30,18 @@ from typing import Optional
 import requests
 import feedparser
 from bs4 import BeautifulSoup
+from anthropic import Anthropic
 
 # Configuration
 API_BASE = os.environ.get("GLITCH_API_BASE", "http://localhost:5000")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 SEEN_DB = os.path.join(os.path.dirname(__file__), "seen_articles.db")
+
+# Initialize Anthropic client (picks up ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN from env)
+claude_client = None
+try:
+    claude_client = Anthropic()
+except Exception:
+    pass
 
 # Initialize seen articles database
 def init_seen_db():
@@ -154,8 +161,8 @@ def fetch_hackernews_stories() -> list[dict]:
 
 def classify_and_translate(article: dict) -> Optional[dict]:
     """Use Claude to classify, assess severity, translate to Arabic, and structure the incident."""
-    if not ANTHROPIC_API_KEY:
-        print("  [SKIP] No ANTHROPIC_API_KEY set, skipping LLM classification")
+    if not claude_client:
+        print("  [SKIP] Anthropic client not available, skipping LLM classification")
         return None
     
     prompt = f"""You are an analyst for "The Glitch Report" (تقرير الخلل), an Arabic-language website that documents:
@@ -193,30 +200,17 @@ Guidelines:
 - Tags should be in Arabic and relevant to the incident"""
 
     try:
-        resp = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": ANTHROPIC_API_KEY,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-            json={
-                "model": "claude-sonnet-4-20250514",
-                "max_tokens": 1000,
-                "messages": [{"role": "user", "content": prompt}],
-            },
-            timeout=30,
+        message = claude_client.messages.create(
+            model="claude_sonnet_4_6",
+            max_tokens=1000,
+            messages=[{"role": "user", "content": prompt}],
         )
         
-        if resp.ok:
-            data = resp.json()
-            text = data["content"][0]["text"]
-            # Try to parse JSON from response
-            result = json.loads(text)
-            if result.get("relevant"):
-                return result
-        else:
-            print(f"  [WARN] Claude API error: {resp.status_code}")
+        text = message.content[0].text
+        # Try to parse JSON from response
+        result = json.loads(text)
+        if result.get("relevant"):
+            return result
     except json.JSONDecodeError:
         print(f"  [WARN] Could not parse LLM response as JSON")
     except Exception as e:

@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
+import { storage, sqlite } from "./storage";
 import { insertIncidentSchema } from "@shared/schema";
+import { runIngestion } from "./ingest";
 
 export async function registerRoutes(server: Server, app: Express) {
   // ==================== PUBLIC API ====================
@@ -98,6 +99,17 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json({ deleted: true });
   });
 
+  // Trigger automated ingestion
+  app.post("/api/admin/ingest", async (req, res) => {
+    try {
+      const maxArticles = parseInt(req.query.max as string) || 30;
+      const result = await runIngestion(maxArticles);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Bulk import (for automated ingestion)
   app.post("/api/admin/incidents/bulk", (req, res) => {
     const { incidents: items } = req.body;
@@ -123,5 +135,27 @@ export async function registerRoutes(server: Server, app: Express) {
     }
 
     res.json({ created: created.length, errors: errors.length, details: errors });
+  });
+
+  // ==================== SITE SETTINGS ====================
+
+  // Get about page content (public)
+  app.get("/api/about", (req, res) => {
+    const row = sqlite.prepare("SELECT value FROM site_settings WHERE key = 'about_content'").get() as any;
+    if (row) {
+      res.json(JSON.parse(row.value));
+    } else {
+      res.json({});
+    }
+  });
+
+  // Update about page content (admin)
+  app.put("/api/admin/about", (req, res) => {
+    const content = req.body;
+    sqlite.prepare("INSERT OR REPLACE INTO site_settings (key, value) VALUES (?, ?)").run(
+      'about_content',
+      JSON.stringify(content)
+    );
+    res.json({ success: true });
   });
 }
