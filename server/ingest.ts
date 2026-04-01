@@ -6,9 +6,38 @@
  * and saves as draft incidents.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { storage, sqlite } from "./storage";
 import crypto from "crypto";
+
+// ========== GEMINI LLM CLIENT ==========
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+async function callGemini(prompt: string, maxTokens: number = 1000): Promise<string | null> {
+  if (!GEMINI_API_KEY) {
+    console.log("  [SKIP] GEMINI_API_KEY not set");
+    return null;
+  }
+  const resp = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+        temperature: 0.3,
+      },
+    }),
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Gemini API error ${resp.status}: ${err.slice(0, 200)}`);
+  }
+  const data = await resp.json() as any;
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+}
 
 // ========== SEEN ARTICLES TRACKING ==========
 
@@ -211,14 +240,6 @@ interface ClassifiedIncident {
 }
 
 async function classifyAndTranslate(article: RawArticle): Promise<ClassifiedIncident | null> {
-  let client: Anthropic;
-  try {
-    client = new Anthropic();
-  } catch {
-    console.log("  [SKIP] Anthropic client not available");
-    return null;
-  }
-  
   const prompt = `You are a senior Arabic newsroom editor for "تقرير الخلل" (The Glitch Report), a site that covers:
 1. AI failures, biases, and incidents (ذكاء اصطناعي)
 2. Crypto scams, hacks, and fraud (كريبتو)
@@ -286,14 +307,16 @@ Examples of BAD headlines (do NOT write like this):
 - critical: widespread harm, massive financial loss, deaths`;
 
   try {
-    const message = await client.messages.create({
-      model: "claude_sonnet_4_6",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const text = await callGemini(prompt, 1000);
+    if (!text) return null;
     
-    const text = (message.content[0] as any).text;
-    const result: ClassifiedIncident = JSON.parse(text);
+    // Extract JSON from response (Gemini sometimes wraps in markdown)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.log(`  [WARN] No JSON found in Gemini response`);
+      return null;
+    }
+    const result: ClassifiedIncident = JSON.parse(jsonMatch[0]);
     return result.relevant ? result : null;
   } catch (e: any) {
     if (e.message?.includes("JSON")) {
@@ -310,13 +333,6 @@ Examples of BAD headlines (do NOT write like this):
 async function reviewHeadline(incident: ClassifiedIncident): Promise<ClassifiedIncident> {
   // Only review if headline_score < 7
   if (!incident.headline_score || incident.headline_score >= 7) return incident;
-
-  let client: Anthropic;
-  try {
-    client = new Anthropic();
-  } catch {
-    return incident; // Can't review without LLM
-  }
 
   const prompt = `أنت محرر عناوين محترف في موقع "تقرير الخلل". العنوان التالي حصل على تقييم ${incident.headline_score}/10.
 
@@ -339,16 +355,11 @@ async function reviewHeadline(incident: ClassifiedIncident): Promise<ClassifiedI
 أجب بالعنوان الجديد فقط، بدون أي شرح أو علامات ترقيم إضافية.`;
 
   try {
-    const message = await client.messages.create({
-      model: "claude_sonnet_4_6",
-      max_tokens: 100,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const newTitle = (message.content[0] as any).text.trim();
-    if (newTitle && newTitle.length > 5 && newTitle.length < 100) {
-      console.log(`    ✎ Headline rewritten: "${incident.title_ar}" → "${newTitle}"`);
-      incident.title_ar = newTitle;
+    const newTitle = await callGemini(prompt, 100);
+    if (newTitle && newTitle.trim().length > 5 && newTitle.trim().length < 100) {
+      const cleaned = newTitle.trim().replace(/^["'`]|["'`]$/g, '');
+      console.log(`    ✎ Headline rewritten: "${incident.title_ar}" → "${cleaned}"`);
+      incident.title_ar = cleaned;
       incident.headline_score = 8; // Mark as reviewed
     }
   } catch (e: any) {
