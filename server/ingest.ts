@@ -107,12 +107,9 @@ const RSS_FEEDS = [
   { url: "https://krebsonsecurity.com/feed/", categoryHint: "iot", sourceName: "Krebs on Security" },
   { url: "https://thehackernews.com/feeds/posts/default", categoryHint: "iot", sourceName: "The Hacker News" },
   // IoT-specific feeds
-  { url: "https://cybernews.com/security/feed/", categoryHint: "iot", sourceName: "CyberNews" },
   { url: "https://www.darkreading.com/rss.xml", categoryHint: "iot", sourceName: "Dark Reading" },
   { url: "https://cybersecuritynews.com/feed/", categoryHint: "iot", sourceName: "Cyber Security News" },
   { url: "https://www.securityweek.com/feed/", categoryHint: "iot", sourceName: "SecurityWeek" },
-  { url: "https://us-cert.cisa.gov/ics/advisories/advisories.xml", categoryHint: "iot", sourceName: "CISA ICS Advisories" },
-  { url: "https://www.reddit.com/r/netsec/.rss", categoryHint: "iot", sourceName: "r/netsec" },
 ];
 
 async function fetchRSSFeeds(): Promise<RawArticle[]> {
