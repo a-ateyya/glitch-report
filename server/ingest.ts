@@ -29,10 +29,8 @@ async function callGemini(prompt: string, maxTokens: number = 1000, usePro: bool
     maxOutputTokens: maxTokens,
     temperature: 0.3,
   };
-  // Disable thinking for Flash to save tokens
-  if (!usePro) {
-    config.thinkingConfig = { thinkingBudget: 0 };
-  }
+  // Disable thinking to save tokens and speed up responses
+  config.thinkingConfig = { thinkingBudget: 0 };
   const resp = await fetch(geminiUrl(model), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
