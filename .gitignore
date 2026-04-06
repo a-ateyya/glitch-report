@@ -7,3 +7,5 @@ vite.config.ts.*
 *.db
 *.db-shm
 *.db-wal
+# Keep seed file tracked
+!server/seed.sql

@@ -2,6 +2,8 @@ import { incidents, stats, type Incident, type InsertIncident } from "@shared/sc
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { eq, desc, like, or, and, sql } from "drizzle-orm";
+import fs from "fs";
+import path from "path";
 
 const sqlite = new Database("glitch.db");
 sqlite.pragma("journal_mode = WAL");
@@ -74,6 +76,22 @@ export class DatabaseStorage implements IStorage {
         value TEXT NOT NULL
       );
     `);
+    // Auto-seed incidents if database is empty (for fresh Railway deployments)
+    const incidentCount = (sqlite.prepare('SELECT COUNT(*) as cnt FROM incidents').get() as any).cnt;
+    if (incidentCount === 0) {
+      const seedPath = path.join(__dirname, 'seed.sql');
+      if (fs.existsSync(seedPath)) {
+        console.log('[seed] Empty database detected — loading seed.sql...');
+        const seedSQL = fs.readFileSync(seedPath, 'utf-8');
+        const statements = seedSQL.split(';').map(s => s.trim()).filter(s => s && !s.startsWith('--'));
+        let loaded = 0;
+        for (const stmt of statements) {
+          try { sqlite.exec(stmt + ';'); loaded++; } catch (e) { /* skip */ }
+        }
+        console.log(`[seed] Loaded ${loaded} stories from seed.sql`);
+      }
+    }
+
     // Seed default about page content if not exists
     const hasAbout = sqlite.prepare("SELECT 1 FROM site_settings WHERE key = 'about_content'").get();
     if (!hasAbout) {
