@@ -1,5 +1,8 @@
+[phases.setup]
+nixPkgs = ["python3", "gcc", "gnumake"]
+
 [phases.build]
-cmds = ["npm run build", "cp server/seed.sql dist/seed.sql || true"]
+cmds = ["npm ci", "npm run build", "cp server/seed.sql dist/seed.sql || true"]
 
 [start]
 cmd = "node dist/index.cjs"
