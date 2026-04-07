@@ -5,7 +5,9 @@ import { eq, desc, like, or, and, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 
-const sqlite = new Database("glitch.db");
+// Use DATA_PATH env var for Railway (volume at /data), fallback to local glitch.db
+const DB_PATH = process.env.DATABASE_PATH || "glitch.db";
+const sqlite = new Database(DB_PATH);
 sqlite.pragma("journal_mode = WAL");
 const db = drizzle(sqlite);
 
@@ -79,7 +81,10 @@ export class DatabaseStorage implements IStorage {
     // Auto-seed incidents if database is empty (for fresh Railway deployments)
     const incidentCount = (sqlite.prepare('SELECT COUNT(*) as cnt FROM incidents').get() as any).cnt;
     if (incidentCount === 0) {
-      const seedPath = path.join(__dirname, 'seed.sql');
+      // Try multiple possible seed locations
+      const seedPath = [__dirname, path.join(__dirname, '..'), '/app/dist', process.cwd()]
+        .map(d => path.join(d, 'seed.sql'))
+        .find(p => fs.existsSync(p)) || path.join(__dirname, 'seed.sql');
       if (fs.existsSync(seedPath)) {
         console.log('[seed] Empty database detected — loading seed.sql...');
         const seedSQL = fs.readFileSync(seedPath, 'utf-8');
