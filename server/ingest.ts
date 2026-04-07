@@ -484,3 +484,4 @@ export async function runIngestion(maxArticles: number = 30): Promise<{
     details,
   };
 }
+// build: 20260407121229

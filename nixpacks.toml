@@ -1,5 +1,5 @@
 [phases.build]
-cmds = ["npm run build", "cp server/seed.sql dist/seed.sql"]
+cmds = ["npm run build", "cp server/seed.sql dist/seed.sql || true"]
 
 [start]
 cmd = "node dist/index.cjs"
