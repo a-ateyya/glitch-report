@@ -5,8 +5,13 @@ import { eq, desc, like, or, and, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 
-// Use DATA_PATH env var for Railway (volume at /data), fallback to local glitch.db
+// Use DATABASE_PATH env var for Railway, fallback to local glitch.db
 const DB_PATH = process.env.DATABASE_PATH || "glitch.db";
+// Ensure the directory exists before opening database
+const _dbDir = path.dirname(DB_PATH);
+if (_dbDir !== '.' && !fs.existsSync(_dbDir)) {
+  fs.mkdirSync(_dbDir, { recursive: true });
+}
 const sqlite = new Database(DB_PATH);
 sqlite.pragma("journal_mode = WAL");
 const db = drizzle(sqlite);
