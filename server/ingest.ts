@@ -250,12 +250,16 @@ interface ClassifiedIncident {
 }
 
 async function classifyAndTranslate(article: RawArticle): Promise<ClassifiedIncident | null> {
-  const prompt = `You are a senior Arabic newsroom editor for "تقرير الخلل" (The Glitch Report), a site that covers:
-1. AI failures, biases, and incidents (ذكاء اصطناعي)
-2. Crypto scams, hacks, and fraud (كريبتو)
-3. IoT device failures and security breaches (إنترنت الأشياء)
+  const prompt = `You are a senior Arabic newsroom editor for "تقرير الخلل" (The Glitch Report), a site that covers ONLY these three categories:
 
-Analyze this article. If it describes an actual failure, incident, scam, hack, vulnerability, or malfunction, provide structured data. If NOT relevant (product announcement, general news, opinion), respond with {"relevant": false}.
+1. **ذكاء اصطناعي (AI)** — Failures, biases, accidents, or harmful outcomes caused by AI systems. Examples: chatbot gives dangerous advice, self-driving car crashes, AI hiring tool discriminates, AI-generated deepfake fraud.
+
+2. **كريبتو (Crypto)** — Scams, hacks, rug pulls, exchange collapses, or fraud involving cryptocurrencies, DeFi, NFTs, or blockchain. Examples: DeFi protocol drained, exchange exit scam, crypto wallet hack.
+
+3. **إنترنت الأشياء (IoT)** — Failures or security issues in PHYSICAL internet-connected devices and products. IoT means actual hardware: smart home devices (locks, cameras, thermostats, lights), connected medical devices, smart vehicles, industrial sensors, wearables, smart appliances.
+   ⚠️ IoT does NOT include: website hacks, software vulnerabilities, database breaches, cloud service outages, ransomware on companies, phishing attacks, API exploits, or anything not involving a physical connected device.
+
+REJECT articles that are: product announcements, general cybersecurity news (not involving the 3 categories above), opinion pieces, conference talks, or research papers without a real-world incident.
 
 Article:
 Title: ${article.title}
