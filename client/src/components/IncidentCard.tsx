@@ -95,11 +95,13 @@ export function IncidentCard({ incident }: IncidentCardProps) {
   const lossAmount = incident.lossAmount ? Number(incident.lossAmount) : null;
   const jobsLost = (incident as any).jobsLost ? Number((incident as any).jobsLost) : null;
   const company = (incident as any).company as string | null;
+  const primaryUrl = sources[0]?.url || "";
 
   return (
     <article
-      className={`${colors.card} border rounded-md overflow-hidden transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg`}
+      className={`${colors.card} border rounded-md overflow-hidden transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg ${primaryUrl ? 'cursor-pointer' : ''}`}
       data-testid={`card-incident-${incident.id}`}
+      onClick={() => { if (primaryUrl) window.open(primaryUrl, '_blank', 'noopener,noreferrer'); }}
     >
       {/* Category strip — 3px top bar */}
       <div className={`h-[3px] w-full ${colors.strip}`} aria-hidden="true" />
@@ -130,6 +132,22 @@ export function IncidentCard({ incident }: IncidentCardProps) {
         >
           {incident.titleAr}
         </h2>
+
+        {/* Source name with link icon */}
+        {sources[0] && (
+          <a
+            href={sources[0].url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[0.625rem] text-muted-foreground/60 hover:text-foreground transition-colors inline-flex items-center gap-1 font-mono"
+            style={{ direction: "ltr", unicodeBidi: "isolate" }}
+            onClick={(e) => e.stopPropagation()}
+            data-testid={`link-primary-source-${incident.id}`}
+          >
+            <svg className="w-2.5 h-2.5 flex-shrink-0 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            {sources[0].title}
+          </a>
+        )}
 
         {/* Impact metrics: loss + jobs lost */}
         {(lossAmount || jobsLost) && (
